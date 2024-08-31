@@ -20,22 +20,27 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * @since 31/8 removes the security from accounts to the api gateway
+     * @author Majd Alkhawaja
+     */
     //NOTE: we make sure that the access token is valid based on a certificate we have (configured in the properties), (public key)
-    @Bean
-    public SecurityFilterChain customSecurityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.authorizeHttpRequests(exchanges -> exchanges
-                        .requestMatchers(HttpMethod.POST, "/accounts/v1").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/accounts/v1").authenticated()
-        ).oauth2ResourceServer(oAuth2ResourceServerSpec ->
-                oAuth2ResourceServerSpec.jwt(Customizer.withDefaults()));
-        httpSecurity.csrf(csrfSpec -> csrfSpec.disable());
-        return  httpSecurity.build();
-    }
+//    @Bean
+//    public SecurityFilterChain customSecurityFilterChain(HttpSecurity httpSecurity) throws Exception {
+//        httpSecurity.authorizeHttpRequests(exchanges -> exchanges
+//                        .requestMatchers(HttpMethod.POST, "/accounts/v1").permitAll()
+//                        .requestMatchers(HttpMethod.GET, "/accounts/v1").authenticated()
+//        ).oauth2ResourceServer(oAuth2ResourceServerSpec ->
+//                oAuth2ResourceServerSpec.jwt(Customizer.withDefaults()));
+//        httpSecurity.csrf(csrfSpec -> csrfSpec.disable());
+//        return  httpSecurity.build();
+//    }
 
 
 }

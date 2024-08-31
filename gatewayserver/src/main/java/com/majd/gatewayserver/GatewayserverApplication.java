@@ -16,8 +16,13 @@ public class GatewayserverApplication {
 	}
 
 
+	/**
+	 * creating the routing configuration
+	 * @param routeLocatorBuilder
+	 * @return
+	 */
 	@Bean
-	public RouteLocator eazyBankRouteConfig(RouteLocatorBuilder routeLocatorBuilder) {
+	public RouteLocator RouteConfig(RouteLocatorBuilder routeLocatorBuilder) {
 		return routeLocatorBuilder.routes()
 				.route(p -> p
 						.path("/accounts/**")

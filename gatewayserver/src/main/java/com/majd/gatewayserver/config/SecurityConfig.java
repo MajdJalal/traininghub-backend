@@ -18,9 +18,16 @@ import java.util.Collections;
 @EnableWebFluxSecurity
 public class SecurityConfig {
 
+    /**
+     * "/accounts/** path must be authenticated by a token
+     * work with default jwt
+     * configure cors
+     * @param serverHttpSecurity
+     * @return
+     */
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity serverHttpSecurity) {
-        serverHttpSecurity.authorizeExchange(exchanges -> exchanges.pathMatchers(HttpMethod.GET).permitAll()
+        serverHttpSecurity.authorizeExchange(exchanges -> exchanges
                         .pathMatchers("/accounts/**").authenticated())
                 .oauth2ResourceServer(oAuth2ResourceServerSpec -> oAuth2ResourceServerSpec
                         .jwt(Customizer.withDefaults()))
@@ -28,6 +35,10 @@ public class SecurityConfig {
         serverHttpSecurity.csrf(csrfSpec -> csrfSpec.disable());
         return serverHttpSecurity.build();
     }
+
+    /**
+     * to avoid cors problems when hitting from the frontend we add this bean
+     */
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
