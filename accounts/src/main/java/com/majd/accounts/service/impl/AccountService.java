@@ -98,9 +98,8 @@ public class AccountService implements IAccountService {
             if(!Objects.equals(response.getStatus(), 201)) throw new Exception("invalid data");
         } catch (Exception e) {
             logger.error(e + " failed to create user ");
-
+            //throw some custom exception
         }
-
     }
 
     /**

@@ -1,6 +1,8 @@
 spring:
   application:
-    name: accounts
+    name: "accounts"
+server:
+  port: 8080
   datasource:
     url: jdbc:postgresql://localhost:5432/accounts_management
     username: postgres
@@ -25,7 +27,7 @@ keycloak:
   server-url: "http://localhost:7080"
   realm: "trainingHubV1"
   client-id: "client1"
-  client-secret: "OiVCtHb3kgHQox0WJYjLtfhXPF5GtX9h"
+  client-secret: "kUObObGzXvzdAmaYLQZpmBA1a29Hg34u"
   admin-username: "admin"
   admin-password: "admin"
 

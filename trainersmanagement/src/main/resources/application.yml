@@ -1,6 +1,6 @@
 spring:
   application:
-    name: trainersmanagement
+    name: "trainersmanagement"
   datasource:
     url: jdbc:postgresql://localhost:5432/trainers_management
     username: postgres
@@ -15,3 +15,5 @@ spring:
     hibernate:
       ddl-auto: create
     show-sql: true
+server:
+  port: 8087

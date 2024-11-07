@@ -14,7 +14,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static org.antlr.v4.runtime.tree.xpath.XPath.findAll;
 
 @Service
 public class TrainerService implements ITrainerService {
@@ -45,4 +49,15 @@ public class TrainerService implements ITrainerService {
         TrainerProfileResponseDto trainerProfileResponseDto = trainerProfileMapper.toTrainerProfileResponseDto(trainerProfile);
         return trainerProfileResponseDto;
     }
+
+    @Override
+    public List<TrainerProfileResponseDto> getTrainerProfiles() {
+        List<TrainerProfile> profiles =  trainerProfileRepository.findAll();
+        List<TrainerProfileResponseDto> respnse = profiles.stream()
+                .map(prof -> trainerProfileMapper.toTrainerProfileResponseDto(prof))
+                .collect(Collectors.toList());
+        return respnse;
+    }
+
+
 }

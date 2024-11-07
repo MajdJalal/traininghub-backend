@@ -16,8 +16,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("trainers-management/trainer/v1")
+@RequestMapping("api/v1/trainers-management/trainers-profiles")
 public class TrainerController {
 
     private final ITrainerService iTrainerService;
@@ -35,7 +37,7 @@ public class TrainerController {
             responseCode = "201",
             description = "created successfully"
     )
-    @PostMapping(value = "/trainers-profiles/{email-account}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/{email-account}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResponseDto> createTrainerProfile(@Valid @RequestBody TrainerProfileRequestDto trainerProfileRequestDto, @PathVariable("email-account") String email_account) {
         iTrainerService.createTrainerProfile(trainerProfileRequestDto, email_account);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -59,11 +61,18 @@ public class TrainerController {
         }
     )
 
-    @GetMapping("/trainers-profiles/{email-account}")
+    @GetMapping("{email-account}")
     public ResponseEntity<TrainerProfileResponseDto> getTrainerProfile(@PathVariable("email-account") String email_account) {
         TrainerProfileResponseDto trainerProfileResponseDto = iTrainerService.getTrainerProfile(email_account);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(trainerProfileResponseDto);
+    }
+
+    @GetMapping("")
+    public ResponseEntity<List<TrainerProfileResponseDto>> getTrainerProfiles() {
+        List<TrainerProfileResponseDto> trainerProfiles = iTrainerService.getTrainerProfiles();
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(trainerProfiles);
     }
 
 
