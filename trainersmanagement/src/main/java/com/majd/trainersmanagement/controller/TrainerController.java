@@ -68,6 +68,7 @@ public class TrainerController {
                 .body(trainerProfileResponseDto);
     }
 
+    @CrossOrigin(origins = "http://localhost:4200")
     @GetMapping("")
     public ResponseEntity<List<TrainerProfileResponseDto>> getTrainerProfiles() {
         List<TrainerProfileResponseDto> trainerProfiles = iTrainerService.getTrainerProfiles();

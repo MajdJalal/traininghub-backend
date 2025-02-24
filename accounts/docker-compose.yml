@@ -1,0 +1,45 @@
+version: "3.8"
+
+services:
+  keycloak:
+    image: keycloak-with-data:latest
+    container_name: keycloak-service
+    ports:
+      - "7080:8080"  # Map host port 7080 to container port 8080
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    volumes:
+      - keycloak_data_main:/opt/keycloak/data
+    networks:
+      - app-network
+
+  account-service:
+    image: account:v1
+    container_name: account-service
+    ports:
+      - "8080:8080"  # Expose your Spring Boot app on port 8080
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - CLIENT_ID=client1
+      - CLIENT_SECRET=kUObObGzXvzdAmaYLQZpmBA1a29Hg34u
+      - GRANT_TYPE=client_credentials
+      - KEYCLOAK_SERVER_URL=http://keycloak-service:8080  # Use container name and internal port
+      - KEYCLOAK_REALM=trainingHubV1
+      - KEYCLOAK_CLIENT_ID=client1
+      - KEYCLOAK_CLIENT_SECRET=kUObObGzXvzdAmaYLQZpmBA1a29Hg34u
+      - KEYCLOAK_ADMIN_USERNAME=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KEYCLOAK_URI_TOKEN=http://keycloak-service:8080/realms/trainingHubV1/protocol/openid-connect/token
+    networks:
+      - app-network
+    depends_on:
+      - keycloak
+
+volumes:
+  keycloak_data_main:
+
+networks:
+  app-network:
+    driver: bridge

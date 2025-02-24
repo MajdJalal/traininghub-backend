@@ -13,6 +13,15 @@
         <module name="traineesmanagement" />
         <module name="trainersmanagement" />
       </profile>
+      <profile name="Annotation profile for healthmanagement" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
+        </processorPath>
+        <module name="healthmanagement" />
+      </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
@@ -20,6 +29,7 @@
       <module name="accounts" options="-parameters" />
       <module name="eurekaserver" options="-parameters" />
       <module name="gatewayserver" options="-parameters" />
+      <module name="healthmanagement" options="-parameters" />
       <module name="traineesmanagement" options="-parameters" />
       <module name="trainersmanagement" options="-parameters" />
     </option>

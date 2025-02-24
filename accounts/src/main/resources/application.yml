@@ -1,8 +1,8 @@
+server:
+  port: 8080
 spring:
   application:
     name: "accounts"
-server:
-  port: 8080
   datasource:
     url: jdbc:postgresql://localhost:5432/accounts_management
     username: postgres
@@ -31,6 +31,9 @@ keycloak:
   admin-username: "admin"
   admin-password: "admin"
 
+client-id: "client1"
+client-secret: "kUObObGzXvzdAmaYLQZpmBA1a29Hg34u"
+grant_type: "client_credentials"
 
 eureka:
   instance:

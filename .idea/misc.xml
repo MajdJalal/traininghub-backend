@@ -9,6 +9,7 @@
         <option value="$PROJECT_DIR$/traineesmanagement/pom.xml" />
         <option value="$PROJECT_DIR$/eurekaserver/pom.xml" />
         <option value="$PROJECT_DIR$/gatewayserver/pom.xml" />
+        <option value="$PROJECT_DIR$/healthmanagement/pom.xml" />
       </list>
     </option>
     <option name="workspaceImportForciblyTurnedOn" value="true" />

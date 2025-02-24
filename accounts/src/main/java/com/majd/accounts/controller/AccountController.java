@@ -3,6 +3,7 @@ package com.majd.accounts.controller;
 
 import com.majd.accounts.dto.AccountRequestDto;
 import com.majd.accounts.dto.ErrorResponseDto;
+import com.majd.accounts.dto.LoginDto;
 import com.majd.accounts.dto.ResponseDto;
 import com.majd.accounts.model.AccountModel;
 import com.majd.accounts.service.IAccountService;
@@ -23,7 +24,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/accounts/v1")
-//@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "http://localhost:5173")
 public class AccountController {
 
     private final IAccountService iAccountService;
@@ -54,9 +55,11 @@ public class AccountController {
     )
     @PostMapping
     public ResponseEntity<ResponseDto> createAccount(@Valid @RequestBody AccountRequestDto accountRequestDto) {
-        iAccountService.createAccount(accountRequestDto);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ResponseDto.builder().statusMsg("created a new account").build());
+        boolean isCreated = iAccountService.createAccount(accountRequestDto);
+        return isCreated ? ResponseEntity.status(HttpStatus.CREATED)
+                .body(ResponseDto.builder().statusMsg("created a new account").build()) :
+                ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(ResponseDto.builder().statusMsg("error creating a new account").build()) ;
     }
 
     @Operation(
@@ -109,11 +112,11 @@ public class AccountController {
 //            )
 //    }
 //    )
-//    @GetMapping
-//    public ResponseEntity<ResponseDto> login(@Valid @RequestBody AccountRequestDto accountRequestDto) {
-//        String token = iAccountService.login(accountRequestDto);
-//        return ResponseEntity.status(HttpStatus.OK)
-//                .body(new ResponseDto(HttpStatus.OK, token));
-//    }
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@Valid @RequestBody LoginDto loginDto) throws Exception {
+        String resp = iAccountService.login(loginDto);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(resp);
+    }
 
 }

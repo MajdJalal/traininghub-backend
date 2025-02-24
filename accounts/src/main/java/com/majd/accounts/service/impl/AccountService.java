@@ -5,30 +5,29 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.majd.accounts.dto.AccountRequestDto;
-import com.majd.accounts.exception.InvalidDataException;
+import com.majd.accounts.dto.LoginDto;
 import com.majd.accounts.model.AccountModel;
 import com.majd.accounts.service.IAccountService;
 import com.majd.accounts.webrequest.KeycloakFeignClient;
+import com.majd.accounts.webrequest.TokenFeignClient;
 import com.majd.accounts.webrequest.UserFeignClient;
 import jakarta.ws.rs.core.Response;
-import org.keycloak.OAuth2Constants;
-import org.keycloak.admin.client.Keycloak;
-import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
-import org.keycloak.representations.idm.*;
+import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.RoleRepresentation;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.keycloak.representations.AccessTokenResponse;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+
 
 @Service
 public class AccountService implements IAccountService {
@@ -41,7 +40,6 @@ public class AccountService implements IAccountService {
 
     private static final String ACCOUNTS_CACHE_KEY = "accounts";
 
-
     private  final Logger logger=  LoggerFactory.getLogger(AccountService.class);
 
     private final PasswordEncoder passwordEncoder;
@@ -50,13 +48,16 @@ public class AccountService implements IAccountService {
     private  final KeycloakFeignClient keycloakFeignClient;
     private  final UserFeignClient userFeignClient;
 
+    private final TokenFeignClient tokenFeignClient;
+
     private final RedisTemplate<String, Object> redisTemplate;
 
-    public AccountService(PasswordEncoder passwordEncoder, RealmResource realmResource, KeycloakFeignClient keycloakFeignClient, UserFeignClient userFeignClient, RedisTemplate<String, Object> redisTemplate) {
+    public AccountService(PasswordEncoder passwordEncoder, RealmResource realmResource, KeycloakFeignClient keycloakFeignClient, UserFeignClient userFeignClient, TokenFeignClient tokenFeignClient, RedisTemplate<String, Object> redisTemplate) {
         this.passwordEncoder = passwordEncoder;
         this.realmResource = realmResource;
         this.keycloakFeignClient = keycloakFeignClient;
         this.userFeignClient = userFeignClient;
+        this.tokenFeignClient = tokenFeignClient;
         this.redisTemplate = redisTemplate;
     }
 
@@ -69,12 +70,13 @@ public class AccountService implements IAccountService {
     */
 
     @Override
-    public void createAccount(AccountRequestDto accountRequestDto) {
+    public boolean createAccount(AccountRequestDto accountRequestDto) {
 
         //extract email and password from dto
         String name = accountRequestDto.getName();
         String email = accountRequestDto.getEmail();
         String password  = accountRequestDto.getPassword();
+        String role = accountRequestDto.getRole();
         logger.info(name + " " + email + " " + password);
         //define the user
         UserRepresentation user = new UserRepresentation();
@@ -90,16 +92,65 @@ public class AccountService implements IAccountService {
         //add credential to user
         user.setCredentials(Collections.singletonList(credential));
 
-
         try {
             UsersResource usersResource = realmResource.users();
             // Create user (requires manage-users role)
             Response response = usersResource.create(user);
             if(!Objects.equals(response.getStatus(), 201)) throw new Exception("invalid data");
+            // Get the user ID from the response location header
+            String userId = response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
+            // Assign roles to the user
+            boolean isRoleAssigned = assignRoleToUser(userId, role);
+            if(!isRoleAssigned) return false;
         } catch (Exception e) {
             logger.error(e + " failed to create user ");
-            //throw some custom exception
+            return false;
         }
+        return true;
+    }
+
+    private boolean assignRoleToUser(String userId, String roleName) {
+        try {
+            UsersResource usersResource = realmResource.users();
+            UserResource userResource = usersResource.get(userId);
+            // Get the role representation
+            RoleRepresentation roleRepresentation = realmResource.roles().get(roleName).toRepresentation();
+            // Assign the role to the user
+            userResource.roles().realmLevel().add(Collections.singletonList(roleRepresentation));
+        } catch (Exception e) {
+            logger.error("Failed to assign role to user: " + e.getMessage());
+            // Throw some custom exception
+            return false;
+        }
+        return true;
+    }
+
+    public String login(LoginDto loginDto) throws Exception {
+        String email = loginDto.getEmail();
+        String password = loginDto.getPassword();
+        String token = null;
+        try {
+            // Get the users resource
+            UsersResource usersResource = realmResource.users();
+            // Query the user by email
+            List<UserRepresentation> users = usersResource.searchByEmail(email, true);
+
+            if (users.isEmpty()) {
+                logger.error("User with email " + email + " not found.");
+                throw new Exception("User not found.");
+            }
+
+            // The user exists, now we need to validate the password
+            UserRepresentation user = users.get(0);
+
+            // Assuming you are using Keycloak's direct access authentication method
+            token = getAccessTokenPasswordFlow(email, password);
+
+        } catch (Exception e) {
+            logger.error("Error during login: " + e.getMessage());
+            throw new Exception("login failed.");
+        }
+        return token;
     }
 
     /**
@@ -170,6 +221,18 @@ public class AccountService implements IAccountService {
         formParams.put("grant_type", "client_credentials");
 
         return keycloakFeignClient.getAccessToken(formParams);
+    }
+
+    private String getAccessTokenPasswordFlow(String name, String password) {
+        Map<String, String> formParams = new HashMap<>();
+        // credentials are extracted from env variables
+        formParams.put("client_id", "client2");
+//        formParams.put("client_secret", client_secret);
+        formParams.put("grant_type", "password");
+        formParams.put("username", name);
+        formParams.put("password", password);
+        logger.debug(name);
+        return tokenFeignClient.getToken(formParams);
     }
 
 
