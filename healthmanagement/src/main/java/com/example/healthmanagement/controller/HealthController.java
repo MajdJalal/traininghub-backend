@@ -12,16 +12,17 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "http://localhost:5173")
 public class HealthController {
 
-    private HealthService healthService;
+//    private HealthService healthService;
 
-    public HealthController(HealthService iAccountService) {
-        this.healthService = iAccountService;
-    }
+//    public HealthController(HealthService iAccountService) {
+//        this.healthService = iAccountService;
+//    }
     @PostMapping("/appointment")
-    public ResponseEntity<> bookAppointment(@Valid @RequestBody BookAppointmentModel bookAppointmentModel) {
-        healthService.bookAppointment(bookAppointmentModel);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ResponseDto.builder().statusMsg("created a new appointment").build());
+    public void bookAppointment( @RequestBody BookAppointmentModel bookAppointmentModel) {
+        System.out.println("majd");
+//        healthService.bookAppointment(bookAppointmentModel);
+//        return ResponseEntity.status(HttpStatus.CREATED)
+//                .body(ResponseDto.builder().statusMsg("created a new appointment").build());
     }
 
 
